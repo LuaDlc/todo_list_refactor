@@ -1,0 +1,1 @@
+class Exceptions implements Exception {}
