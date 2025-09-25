@@ -8,6 +8,7 @@ class TodoListPage extends StatefulWidget {
   const TodoListPage({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _TodoListPageState createState() => _TodoListPageState();
 }
 
@@ -19,47 +20,43 @@ class _TodoListPageState extends State<TodoListPage> {
     return Scaffold(
       appBar: AppBar(title: Text('Lista de tarefas')),
       //corpo do aplicativo:
-      body: BlocBuilder<TodoBloc, TodoState>(
-        builder: (context, state) {
-          return Container(
-            padding: EdgeInsets.all(24),
-            child: Column(
-              children: [
-                TextField(controller: textEditingController),
+      body: Container(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          children: [
+            TextField(controller: textEditingController),
 
-                SizedBox(
-                  height: 400,
-                  child: BlocBuilder<TodoBloc, TodoState>(
-                    builder: (context, state) {
-                      if (state is TodoLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (state is TodoLoaded) {
-                        final todos = state.todos;
-                        if (todos.isEmpty) {
-                          return const Center(child: Text('nenhuma tarefa'));
-                        }
-                        return ListView.separated(
-                          separatorBuilder: (_, _) => Divider(),
-                          itemCount: todos.length,
-                          itemBuilder: (context, index) {
-                            final todo = todos[index];
+            SizedBox(
+              height: 400,
+              child: BlocBuilder<TodoBloc, TodoState>(
+                builder: (context, state) {
+                  if (state is TodoLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is TodoLoaded) {
+                    final todos = state.todos;
+                    if (todos.isEmpty) {
+                      return const Center(child: Text('nenhuma tarefa'));
+                    }
+                    return ListView.separated(
+                      separatorBuilder: (_, _) => Divider(),
+                      itemCount: todos.length,
+                      itemBuilder: (context, index) {
+                        final todo = todos[index];
 
-                            return ListTile(
-                              onLongPress: () {
-                                context.read<TodoBloc>().add(
-                                  DeleteTodoEvent(todo.id),
-                                );
-                              },
-                              title: Text(
-                                todo.title,
-                                style: TextStyle(
-                                  decoration: todo.isDone
-                                      ? TextDecoration.lineThrough
-                                      : null,
-                                ),
-                              ),
+                        return ListTile(
+                          title: Text(
+                            todo.title,
+                            style: TextStyle(
+                              decoration: todo.isDone
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
 
-                              trailing: Checkbox(
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Checkbox(
                                 value: todo.isDone,
                                 onChanged: (_) {
                                   context.read<TodoBloc>().add(
@@ -67,20 +64,28 @@ class _TodoListPageState extends State<TodoListPage> {
                                   );
                                 },
                               ),
-                            ); //listTile
-                          },
+                              IconButton(
+                                onPressed: () {
+                                  context.read<TodoBloc>().add(
+                                    DeleteTodoEvent(todo.id),
+                                  );
+                                },
+                                icon: Icon(Icons.delete),
+                              ),
+                            ],
+                          ),
                         );
-                      } else if (state is TodoError) {
-                        return Center(child: Text(state.message));
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
-              ],
+                      },
+                    );
+                  } else if (state is TodoError) {
+                    return Center(child: Text(state.message));
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
       floatingActionButton: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
